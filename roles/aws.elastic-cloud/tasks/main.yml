@@ -1,0 +1,58 @@
+---
+
+#
+#
+#
+#
+#
+#
+#
+
+
+
+# TODO
+# http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecs.html
+# create s3 bucket `name-docker-auth
+# create file `name-docker-auth`
+#{
+#	"https://index.docker.io/v1/": {
+#		"auth": "",
+#		"email": ""
+#	}
+#}
+# auth from ~/.docker/config.json > auth
+
+- name: "Docker Repo: Login"
+
+- name: "Docker Repo: Save Auth Token"
+
+- name: "Docker Repo: Setup S3 Bucket"
+  #http://docs.ansible.com/ansible/s3_module.html
+  #s3:
+  #  bucket:
+
+- name: "Docker Repo: Place credentials in S3 Bucket"
+
+
+- name: "EBS"
+# https://github.com/hsingh/ansible-elastic-beanstalk
+
+
+- name: "Create ElasticSearch cluster"
+  ec2_elasticsearch:
+    name: "elastic-cloud"
+    elasticsearch_version: "5.1"
+    region: "{{aws_region}}"
+    instance_type: "m3.medium.elasticsearch"
+    instance_count: 1
+    dedicated_master: False
+    #dedicated_master_instance_type: "t2.micro.elasticsearch"
+    #dedicated_master_instance_count: 2
+    zone_awareness: False
+    ebs: False
+    volume_type: "standard"
+    volume_size: 10
+    snapshot_hour: 0
+    access_policies: "{{ lookup('file', 'access_policy.json') | from_json }}"
+    profile: "aws.watsco.{{bu}}"
+  register: response

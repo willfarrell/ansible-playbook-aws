@@ -1,0 +1,41 @@
+---
+
+# TODO move to server setup
+#- name:               Create Elastic Load Balancer
+#  ec2_elb_lb:
+#    name:             "{{ vpc_id }}"
+#    region:           "{{ aws_region }}"
+#    profile:          "{{ aws_profile }}"
+#    subnets:
+#      - {{ private_subnet_id }}
+#    #cross_az_load_balancing: "yes" # Only when > 1 subnet
+#    listeners:
+#      - protocol: http # options are http, https, ssl, tcp
+#        load_balancer_port: 80
+#        instance_port: 80
+#        proxy_protocol: True
+#      - protocol: https
+#        load_balancer_port: 443
+#        instance_port: 80
+#        proxy_protocol: True
+#    state: "present"
+
+
+
+- name:               Create `Web Server` Security Group
+  ec2_group:
+    name:             "Web Server"
+    description:      "80, 443"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+    state:            "present"

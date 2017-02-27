@@ -1,0 +1,17 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": [
+					"*"
+				]
+			},
+			"Action": [
+				"es:*"
+			],
+			"Resource": "arn:aws:es:{{ aws_region }}:{{ es_resource_id }}:domain/elastic-cloud/*"
+		}
+	]
+}

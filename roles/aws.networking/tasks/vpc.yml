@@ -1,0 +1,164 @@
+---
+
+# http://jeremievallee.com/2016/07/27/aws-vpc-ansible/
+
+# TODO
+# - EC2 Bastion for ssh access
+# - Note all web servers can be on teh private network and use ELB
+
+# VPC
+- name:               Create VPC
+  ec2_vpc_net:
+    name:             "{{ vpc_name }}"
+    cidr_block:       "{{ vpc_cidr_block }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    dns_hostnames:    "yes"
+    state:            "present"
+  register: my_vpc
+
+- name:               Set VPC ID in variable
+  set_fact:
+    vpc_id:           "{{ my_vpc.vpc.id }}"
+
+# Subnets
+- name:               Create Public Subnet
+  ec2_vpc_subnet:
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "{{ public_subnet_1_cidr }}"
+    az:               "{{ aws_region }}a"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    resource_tags:
+      Name:           "{{ vpc_name }} Public Subnet"
+    state:            "present"
+  register: my_public_subnet
+
+- name:               Set Public Subnet ID in variable
+  set_fact:
+    public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+
+- name:               Create Private Subnet
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "{{ private_subnet_1_cidr }}"
+    az:               "{{ aws_region }}a"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    resource_tags:
+      Name:           "{{ vpc_name }} Private Subnet"
+  register: my_private_subnet
+
+- name:               Set Private Subnet ID in variable
+  set_fact:
+    private_subnet_id: "{{ my_private_subnet.subnet.id }}"
+
+# Internet Gateway
+- name:               Create Internet Gateway for VPC
+  ec2_vpc_igw:
+    #name:             "{{ vpc_name }}"     # Not Supported
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    state:            "present"
+  register: my_vpc_igw
+
+- name:               Set Internet Gateway ID in variable
+  set_fact:
+    igw_id:           "{{ my_vpc_igw.gateway_id }}"
+
+# NAT
+- name:               Create Elastic IP
+  shell: >
+      aws --profile {{ aws_profile }} ec2 allocate-address --domain vpc --query AllocationId | tr -d '"'
+  register: eip
+
+- debug: var=eip
+
+- name:               Set Elastic IP in variable
+  set_fact:
+    my_elastic_ip:    "{{ eip.stdout }}"
+
+- name: Create NAT Gateway
+  shell: >
+    aws --profile {{ aws_profile }} ec2 create-nat-gateway \
+    --subnet-id {{ public_subnet_id }} \
+    --allocation-id {{ my_elastic_ip }} \
+    --query NatGateway.NatGatewayId | tr -d '"'
+  register: my_nat_gateway
+
+- name:               Set Nat Gateway ID in variable
+  set_fact:
+    nat_gateway_id:   "{{ my_nat_gateway.stdout }}"
+
+# We pause a few seconds for the NAT Gateway to be ready.
+- pause: seconds=5
+
+# Subnet Routes
+- name:               Set up public subnet route table
+  ec2_vpc_route_table:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    tags:
+      Name:           "{{ vpc_name }} Public"
+    subnets:
+      - "{{ public_subnet_id }}"
+    routes:
+      - dest:         "0.0.0.0/0"
+        gateway_id:   "{{ igw_id }}"
+
+- name:               Set up private subnet route table
+  ec2_vpc_route_table:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    tags:
+      Name:           "{{ vpc_name }} Private"
+    subnets:
+      - "{{ private_subnet_id }}"
+    routes:
+      - dest:         "0.0.0.0/0"
+        gateway_id:   "{{ nat_gateway_id }}"
+
+# Firewalls
+- name:               Set up Network ACLs
+  ec2_vpc_nacl:
+    name:             "{{ vpc_name }} Public"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    subnets:
+     - "{{ public_subnet_id }}"
+    tags:
+      Name:           "{{ vpc_name }} Public"
+    ingress: [
+      [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80],
+      [101, 'tcp', 'allow', '0.0.0.0/0', null, null, 443, 443],
+      [153, 'udp', 'allow', '0.0.0.0/0', null, null, 53, 53],
+      [122, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22],
+      [333, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535],
+      [444, 'udp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
+    ]
+    egress: [
+      [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80],
+      [101, 'tcp', 'allow', '0.0.0.0/0', null, null, 443, 443],
+      [153, 'udp', 'allow', '0.0.0.0/0', null, null, 53, 53],
+      [103, 'icmp', 'allow', '0.0.0.0/0', 0, 8],
+      [333, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
+    ]
+    state:            "present"
+
+# VPN
+#- name: Create a new vgw attached to a specific VPC
+#  ec2_vpc_vgw:
+#    name:           "{{ vpc_name }}"
+#    vpc_id:         "{{ vpc_id }}"
+#    region:         "{{ aws_region }}"
+#    profile:        "{{ aws_profile }}"
+#    type:           "ipsec.1"
+#    tags:
+#      Name:           "{{ vpc_name }}"
+#    state:          "present"
+#  register: my_vpc_vgw

@@ -1,0 +1,19 @@
+---
+- name: install yum repo
+  copy:
+    owner=root
+    src=files/docker.repo
+    dest=/etc/yum.repos.d/docker.repo
+
+- name: Install docker
+  yum: name={{ item }} state=latest
+  with_items:
+    - docker-engine
+    - python-docker-py
+
+- name: making sure pip installed
+  yum: name=python-pip state=present
+
+- name: Install docker-compose through pip
+  pip: name=docker-compose state=latest
+

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+
+# pip install --upgrade ansible
+# pip install --upgrade boto3
+# pip install --upgrade --user awscli
+
+# install deps
+#ansible-galaxy install --roles-path=./roles -r requirements.yml
+
+ansible-playbook playbook-aws.yml

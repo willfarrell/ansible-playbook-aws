@@ -1,0 +1,24 @@
+---
+
+#- stat: path=~/.ssh/{{ aws_key_name }} get_md5=yes
+#  register: before
+#
+#- name: "Create AWS profile"
+#  shell: >
+#    echo -e  'y\n' | ssh-keygen -q -t ecdsa -b 521 -N '' -C "AWS {{ aws_key_name }}" -f ~/.ssh/{{ aws_key_name }}
+#    ssh-add {{ aws_key_name }}
+#  changed_when: False
+#
+#- stat: path=~/.aah/{{ aws_key_name }} get_md5=yes
+#  register: after
+#
+#- debug: msg='~/.ssh/{{ aws_key_name }} file changed'
+#  changed_when: "'{{before.stat.md5}}' != '{{after.stat.md5}}'"
+
+- name: Create EC2 Key
+  ec2_key:
+    name:             "{{ aws_key_name }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    force:            false
+    state:            present

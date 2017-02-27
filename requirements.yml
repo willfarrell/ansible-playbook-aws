@@ -1,0 +1,11 @@
+---
+
+
+# Playbook: docker
+- name: galaxy.cis.debian
+  src: awailly.cis-ubuntu-ansible
+
+- name: galaxy.docker
+  src: abaez.docker
+
+

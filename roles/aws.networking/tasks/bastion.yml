@@ -1,0 +1,68 @@
+---
+
+- name:               Create `ssh` Security Group
+  ec2_group:
+    name:             "Bastion Host"
+    description:      "22"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: {{ user_ip }}/0
+    state:            "present"
+  register: my_bastion_group
+
+- name:               Set Public Subnet ID in variable
+  set_fact:
+    bastion_group_id: "{{ my_bastion_group.id }}"
+
+- name:             Create EC2 Server
+  ec2:
+    key_name:         "{{ aws_key_name }}"
+    instance_type:    t2.micro
+    image:            {{ aws_bastion_ami }}
+    wait:             yes
+    group:            "{{ bastion_group_id }}"
+    count:            1
+    vpc_subnet_id:    "{{ public_subnet_id }}"
+    assign_public_ip: yes
+  register: bastion_ec2
+
+- name: Add new instance to host group
+    add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: launched
+    with_items: "{{ bastion_ec2.instances }}"
+
+- name: Wait for SSH to come up
+    wait_for:
+      host: "{{ item.public_dns_name }}"
+      port: 22
+      delay: 60
+      timeout: 320
+      state: started
+    with_items: "{{ bastion_ec2.instances }}"
+
+# TODO bastion setup - lockdown
+
+- name:               Create `default` Security Group
+  ec2_group:
+    name:             "default"
+    description:      "Allow Bastion host access"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: {{ item.public_ip }}/0
+    rules_egress:
+    state:            "present"
+  with_items: "{{ bastion_ec2.instances }}"
+
+
+

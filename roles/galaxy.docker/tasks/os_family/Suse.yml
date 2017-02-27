@@ -1,0 +1,13 @@
+---
+- name: Install docker
+  zypper: name={{ item }} state=latest
+  with_items:
+    - docker
+    - python-docker-py
+
+- name: docker eextra modules
+  zypper: name={{ item }} state=latest
+  with_items:
+    - docker-zsh-completion
+    - yast2-docker
+    - docker-compose

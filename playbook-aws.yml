@@ -1,0 +1,38 @@
+---
+
+# ansible-playbook aws.yml
+
+# AWS IAM `ansible`
+# Requires: AdministratorAccess
+# TODO decrease permissions of ansible user
+# https://awspolicygen.s3.amazonaws.com/policygen.html
+
+- hosts: localhost
+  vars:
+    # vars/localhost/aws.yml
+
+    public_subnet_id: 'Staging'
+    aws_docker_ami:  'ami-29b38f3e'  # Debian Jessie us-east-1
+
+  roles:
+  #  - aws.docker.create
+
+- hosts: localhost
+  vars:
+    # vars/localhost/aws.yml
+
+    vpc_name:       'Production'
+    vpc_cidr_block: '10.10.0.0/16'
+
+    public_subnet_1_cidr:  "10.10.0.0/24"
+    private_subnet_1_cidr: "10.10.1.0/24"
+
+    # Bastion Host
+    user_ip: '198.48.152.70'
+    aws_bastion_ami: 'ami-29b38f3e'  # Debian Jessie us-east-1
+
+  roles:
+  #  - aws.docker-ami
+  #  - galaxy.cis.debian
+  #  - galaxy.docker
+  #  - aws.jenkins
