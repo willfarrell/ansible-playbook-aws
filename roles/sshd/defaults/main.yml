@@ -1,0 +1,11 @@
+---
+sshd_port: 22
+sshd_permitroot: "no"
+sshd_pubkeyauth: "yes"
+sshd_gracetime: 20
+sshd_passauth: "no"
+sshd_keybits: 2048
+
+ssh_user_expire: 7776000
+ssh_users:
+  - ansible

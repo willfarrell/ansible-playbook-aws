@@ -1,11 +1,13 @@
 ---
 
 
-# Playbook: docker
-- name: galaxy.cis.debian
-  src: awailly.cis-ubuntu-ansible
+- name: galaxy.cis
+  src: https://github.com/MindPointGroup/RHEL7-CIS.git
 
-- name: galaxy.docker
-  src: abaez.docker
+- name: galaxy.fail2ban
+  src: https://github.com/resmo/ansible-role-fail2ban.git
+
+#- name: galaxy.lvm
+#  src: https://github.com/debops/ansible-lvm.git
 
 

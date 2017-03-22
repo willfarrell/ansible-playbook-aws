@@ -1,0 +1,5 @@
+---
+- name: reloaded sshd
+  service:
+    name: sshd
+    state: reloaded

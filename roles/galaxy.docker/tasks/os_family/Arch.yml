@@ -1,8 +1,0 @@
----
-- name: install the required
-  pacman: name="{{ item }}" state=updated
-  with_items:
-    - docker
-    - docker-compose
-    - docker-machine
-    - python-docker-py

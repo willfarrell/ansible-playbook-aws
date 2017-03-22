@@ -1,0 +1,35 @@
+---
+
+# ansible-playbook aws.yml
+
+- hosts: localhost
+  vars:
+    # host_vars/localhost/aws.yml
+
+    # aws.networking
+    vpc_name:       'Staging'
+    vpc_cidr_2:     '185'
+    vpc_cidr_block: '10.{{vpc_cidr_2}}.0.0/16'
+
+    public_subnet_az1_cidr:  '10.{{vpc_cidr_2}}.10.0/24'
+    private_subnet_az1_cidr: '10.{{vpc_cidr_2}}.11.0/24'
+
+    public_subnet_az2_cidr:  '10.{{vpc_cidr_2}}.20.0/24'
+    private_subnet_az2_cidr: '10.{{vpc_cidr_2}}.21.0/24'
+
+    # aws.ec2.bastion
+    bastion_instance_type:    't2.micro'
+
+    # aws.ec2.webapp
+    webapp_instance_type:     't2.small'
+
+    # aws.rds
+    db_instance_type:         't2.small'
+    db_password:              'password'
+  roles:
+    - aws.profile
+    - aws.networking
+    - aws.ec2.privkey
+    - aws.ec2.bastion
+    - aws.ec2.webapp
+    - aws.rds

@@ -1,0 +1,36 @@
+---
+
+# ansible-playbook 2_servers.yml
+
+- hosts: bastion
+  become: yes
+  vars:
+    ssh_users:
+      - wfarrell
+      - fayzaan
+      - bscheurman
+      - pmccluskey
+    ssh_sudo_users:
+      - wfarrell
+      - pmccluskey
+    ssh_default_password: "P4ssw0rd!01234"
+  roles:
+#    - update
+#    - galaxy.cis
+#    - galaxy.fail2ban
+#    - sshd
+    - docker
+  # TODO - not complete - need pam replacement
+  #  - google_authenticator
+  #  - galaxy.firewall
+
+#- host: webapp
+#  become: yes
+#  vars:
+#  roles:
+#    - update
+#    - galaxy.cis
+#    - galaxy.fail2ban
+#    - sshd
+#    - docker
+#    - galaxy.firewall

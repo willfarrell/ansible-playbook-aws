@@ -1,0 +1,22 @@
+---
+
+- local_action: stat path=~/.ssh/{{ aws_key_name }}.pub
+  register: pubkey_file
+  become: no
+  changed_when: false
+
+# ECDSA not supported via API
+# ssh-keygen -q -t ecdsa -b 521 -N '' -C "" -f ~/.ssh/{{ aws_key_name }}
+- name: Create SSH key pair
+  shell: >
+    ssh-keygen -q -t rsa -b 4096 -N '' -C "" -f ~/.ssh/{{ aws_key_name }}
+  when: pubkey_file.stat.exists == false
+
+- name: Create EC2 Key
+  ec2_key:
+    name:             "{{ aws_key_name }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    key_material:     "{{ item }}"
+    state:            present
+  with_file: "~/.ssh/{{ aws_key_name }}.pub"

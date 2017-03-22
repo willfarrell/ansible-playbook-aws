@@ -1,0 +1,93 @@
+---
+
+# product-code from https://wiki.centos.org/Cloud/AWS
+- name:               Get AMI for CentOS in region
+  ec2_ami_find:
+    region:           "{{ aws_region }}"
+    owner:            "aws-marketplace"
+    product_code:     "aw0evgkw8e5c1q413zgy5pjce"
+    no_result_action: fail
+  register: ami_find
+
+- debug: var=ami_find.results[0]
+
+- name:               Set AMI ID in variable
+  set_fact:
+    bastion_instance_ami: "{{ ami_find.results[0].ami_id }}"
+
+
+- name:               Create Bastion Host Security Group
+  ec2_group:
+    name:             "Bastion Host"
+    #tags:                              # Not Supported
+    #  Name: "name"
+    description:      "Port 22"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    state:            "present"
+  register: my_bastion_group
+
+- name:               Set Bastion Host Security Group ID in variable
+  set_fact:
+    bastion_group_id: "{{ my_bastion_group.group_id }}"
+
+
+- name:               Create Bastion Server
+  ec2:
+    profile:          "{{ aws_profile }}"
+    key_name:         "{{ aws_key_name }}"
+    instance_type:    "{{ bastion_instance_type }}"
+    image:            "{{ bastion_instance_ami }}"
+    region:           "{{ aws_region }}"
+    wait:             yes
+    group_id:         ["{{ bastion_group_id }}"]
+    exact_count:      1
+    count_tag:        "bastion"
+    vpc_subnet_id:    "{{ public_subnet_az1_id }}"
+    instance_tags:
+      Name:           "Bastion Host"
+      bastion:        "true"
+  register: bastion_ec2s
+
+- debug: var=bastion_ec2s
+
+- name:               Set Bastion ID in variable
+  set_fact:
+    bastion_ec2: "{{ bastion_ec2s.tagged_instances[0] }}"
+
+# Attach Elastic IP
+- name:               Apply Elastic IP to Bastion
+  ec2_eip:
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    device_id:        "{{ bastion_ec2.id }}"
+    state:            "present"
+  register: bastion_eip
+
+- debug: var=bastion_eip
+
+# http://docs.ansible.com/ansible/intro_inventory.html#id13
+#- name: Add new instance to host group
+#  add_host:
+#    hostname: "{{ bastion_ec2.public_ip }}"
+#    groupname: launched
+#  changed_when: false
+#
+#- name: Wait for SSH to come up (60sec)
+#  wait_for:
+#    host: "{{ bastion_ec2.public_dns_name }}"
+#    port: 22
+#    delay: 60
+#    timeout: 320
+#    state: started
+
+# TODO bastion setup - lockdown
+# ssh user centos
+
+

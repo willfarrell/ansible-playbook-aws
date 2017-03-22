@@ -1,0 +1,9 @@
+---
+
+- name: CIS 3.4.2 /etc/hosts.allow
+  copy:
+    src:        "files/etc/hosts.allow"
+    dest:       "/etc/hosts.allow"
+    owner:      "root"
+    group:      "root"
+    mode:       0644

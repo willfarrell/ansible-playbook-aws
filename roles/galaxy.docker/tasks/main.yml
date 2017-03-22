@@ -1,6 +1,0 @@
----
-- name: Install docker and dependencies
-  include: "os_family/{{ ansible_os_family }}.yml"
-
-- name: Configure docker
-  include: "configuration.yml"

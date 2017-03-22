@@ -1,0 +1,87 @@
+---
+
+# product-code from https://wiki.centos.org/Cloud/AWS
+- name:               Get AMI for CentOS in region
+  ec2_ami_find:
+    region:           "{{ aws_region }}"
+    owner:            "aws-marketplace"
+    product_code:     "aw0evgkw8e5c1q413zgy5pjce"
+    no_result_action: fail
+  register: ami_find
+
+- debug: var=ami_find.results[0]
+
+- name:               Set AMI ID in variable
+  set_fact:
+    aws_instance_ami: "{{ ami_find.results[0].ami_id }}"
+
+- name:               Create Web App Security Group
+  ec2_group:
+    name:             "Web App"
+    #tags:                              # Not Supported
+    #  Name: "name"
+    description:      "Port 80, 443, 22 from Bastion"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto:        tcp
+        from_port:    80
+        to_port:      80
+        cidr_ip:      0.0.0.0/0
+      - proto:        tcp
+        from_port:    443
+        to_port:      443
+        cidr_ip:      0.0.0.0/0
+      - proto:        tcp
+        from_port:    22
+        to_port:      22
+        group_id:      "{{ bastion_group_id }}"
+    state:            "present"
+  register: my_webapp_group
+
+- name:               Set Web App Security Group ID in variable
+  set_fact:
+    webapp_group_id: "{{ my_webapp_group.group_id }}"
+
+- name:               Create Web App Server [AZ1]
+  ec2:
+    profile:          "{{ aws_profile }}"
+    key_name:         "{{ aws_key_name }}"
+    instance_type:    "{{ webapp_instance_type }}"
+    image:            "{{ aws_instance_ami }}"
+    region:           "{{ aws_region }}"
+    wait:             yes
+    group_id:         ["{{ webapp_group_id }}"]
+    exact_count:      1
+    count_tag:        "webapp_az1"
+    vpc_subnet_id:    "{{ private_subnet_az1_id }}"
+    instance_tags:
+      Name:           "Web App"
+      webapp_az1:     "true"
+  register: webapp_az1_ec2s
+
+- debug: var=webapp_az1_ec2s
+
+#- name:               Set Web App ID in variable
+#  set_fact:
+#    bastion_ec2: "{{ webapp_ec2s.tagged_instances[0] }}"
+
+- name:               Create Web App Server [AZ2]
+  ec2:
+    profile:          "{{ aws_profile }}"
+    key_name:         "{{ aws_key_name }}"
+    instance_type:    "{{ webapp_instance_type }}"
+    image:            "{{ aws_instance_ami }}"
+    region:           "{{ aws_region }}"
+    wait:             yes
+    group_id:         ["{{ webapp_group_id }}"]
+    exact_count:      1
+    count_tag:        "webapp_az2"
+    vpc_subnet_id:    "{{ private_subnet_az2_id }}"
+    instance_tags:
+      Name:           "Web App"
+      webapp_az2:     "true"
+  register: webapp_az2_ec2s
+
+- debug: var=webapp_az2_ec2s

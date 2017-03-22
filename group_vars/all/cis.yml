@@ -1,0 +1,17 @@
+---
+
+rhel7cis_section1: true
+rhel7cis_section2: true
+rhel7cis_section3: true
+rhel7cis_section4: true
+rhel7cis_section5: true
+rhel7cis_section6: true
+
+
+rhel7cis_host_allow:
+  - "0.0.0.0/0"
+  - "10.0.0.0/255.0.0.0"
+  - "172.16.0.0/255.240.0.0"
+  - "192.168.0.0/255.255.0.0"
+
+rhel7cis_firewall: iptables

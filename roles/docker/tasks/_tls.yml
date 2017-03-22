@@ -1,0 +1,43 @@
+---
+
+
+# 2.6 & 3.{7-14} TLS
+# https://docs.docker.com/engine/security/https/
+HOST=dns.name.of.server
+
+mkdir -pv /root/.docker
+cd /root/.docker
+
+PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9-_!@#$%^&*()_+{}|:<>?=' | fold -w 64 | head -n 1)
+echo "${PASSWORD}" > passphrase
+
+## CA
+openssl genrsa -aes256 -out ca-key.pem -passout file:passphrase 4096
+echo -e "\n\n\n\n\n$HOST\n\n\n\n" | openssl req -new -x509 -passin file:passphrase -days 1095 -key ca-key.pem -sha512 -out ca.pem
+
+## Cert
+openssl ecparam -genkey -name secp384r1 -out server-key.pem
+openssl req -subj "/CN=$HOST" -sha512 -new -key server-key.pem -out server.csr
+echo subjectAltName = DNS:$HOST,IP:10.10.10.20,IP:127.0.0.1 > extfile.cnf
+openssl x509 -req -passin file:passphrase -days 1095 -sha512 -in server.csr -CA ca.pem -CAkey ca-key.pem \
+  -CAcreateserial -out server-cert.pem -extfile extfile.cnf
+
+## Client
+openssl ecparam -genkey -name secp384r1 -out key.pem
+openssl req -subj '/CN=client' -new -key key.pem -out client.csr
+echo extendedKeyUsage = clientAuth > extfile.cnf
+openssl x509 -req -passin file:passphrase -days 1095 -sha512 -in client.csr -CA ca.pem -CAkey ca-key.pem \
+  -CAcreateserial -out cert.pem -extfile extfile.cnf
+
+rm -v client.csr server.csr
+
+chmod -v 0400 ca-key.pem key.pem server-key.pem
+chmod -v 0444 ca.pem server-cert.pem cert.pem
+
+# TODO setting host fails TLS
+#export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1 DOCKER_CERT_PATH=/etc/docker/certs.d/
+
+docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem -H=$HOST:2376 version
+
+rm -v extfile.cnf passphrase
+PASSWORD=

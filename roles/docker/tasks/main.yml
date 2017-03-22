@@ -1,0 +1,10 @@
+---
+
+- include: volumes.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: install.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: config.yml
+  when: ansible_os_family == 'RedHat'

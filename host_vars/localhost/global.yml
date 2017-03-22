@@ -1,0 +1,16 @@
+---
+
+# Vars that need to propagate between roles
+
+# aws.networking
+vpc_id:
+public_subnet_az1_id:
+private_subnet_az1_id:
+public_subnet_az2_id:
+private_subnet_az2_id:
+
+# aws.ec2.bastion
+bastion_host_group_id:
+bastion_access_group_id:
+
+# aws.ec2.webapp

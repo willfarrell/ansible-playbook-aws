@@ -1,0 +1,31 @@
+---
+
+# CentOS come with firewalld instead of iptables
+# This has known issues with docker
+
+- name: Install `iptables`
+  yum:
+    name: iptables-services
+    state: present
+
+- name: Stop `firewalld`
+  systemd:
+    name: firewalld
+    state: stopped
+  #ignore_errors: yes
+
+- name: Start `iptables`
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - iptables
+    - ip6tables
+
+- name: Disable `firewalld`
+  systemd:
+    name: firewalld
+    enabled: no
+    masked: yes
+  #ignore_errors: yes

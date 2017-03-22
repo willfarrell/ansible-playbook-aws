@@ -8,4 +8,10 @@ set -e
 # install deps
 #ansible-galaxy install --roles-path=./roles -r requirements.yml
 
-ansible-playbook playbook-aws.yml
+# Cloud
+#ansible-playbook 1_aws.yml
+
+# Servers
+ansible bastion -m ping
+
+ansible-playbook 2_servers.yml

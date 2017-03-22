@@ -1,0 +1,19 @@
+# CIS Docker 1.13.0 Benckmark
+# 1.5
+-w /usr/bin/docker -k docker
+# 1.6
+-w /var/lib/docker -k docker
+# 1.7
+-w /etc/docker -k docker
+# 1.8
+-w /usr/lib/systemd/system/docker.service -k docker
+# 1.9
+-w /usr/lib/systemd/system/docker.socket -k docker
+# 1.10
+-w /etc/default/docker -k docker
+# 1.11
+-w /etc/docker/daemon.json -k docker
+# 1.12
+-w /usr/bin/docker-containerd -k docker
+# 1.13
+-w /usr/bin/docker-runc -k docker

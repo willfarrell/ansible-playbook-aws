@@ -1,0 +1,31 @@
+---
+- name: Install Google Authenticator Dependancies
+  yum:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - autoconf
+    - automake
+    - libtool
+    - pam-devel
+    - gcc
+    - make
+  when: ansible_os_family == 'RedHat'
+  tags: package
+
+- name: Unpack Google Authenticator
+  unarchive:
+    remote_src: false
+    src: "files/google-authenticator-1.03.tar.gz"
+    dest: "/tmp"
+
+- name: Compile and Install Google Authenticator
+  command: chdir=/tmp/google-authenticator-libpam-1.03 {{ item }}
+  args:
+  with_items:
+    - ./bootstrap.sh
+    - ./configure
+    - make
+    - make install
+
+#- name: Configure PAM

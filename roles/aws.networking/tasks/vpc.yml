@@ -21,38 +21,80 @@
   set_fact:
     vpc_id:           "{{ my_vpc.vpc.id }}"
 
+- debug: var=vpc_id
+
 # Subnets
-- name:               Create Public Subnet
+- name:               Create Public Subnet [AZ1]
   ec2_vpc_subnet:
     vpc_id:           "{{ vpc_id }}"
-    cidr:             "{{ public_subnet_1_cidr }}"
+    cidr:             "{{ public_subnet_az1_cidr }}"
     az:               "{{ aws_region }}a"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:
       Name:           "{{ vpc_name }} Public Subnet"
     state:            "present"
-  register: my_public_subnet
+  register: my_public_subnet_az1
 
-- name:               Set Public Subnet ID in variable
+- name:               Set Public Subnet ID in variable [AZ1]
   set_fact:
-    public_subnet_id: "{{ my_public_subnet.subnet.id }}"
+    public_subnet_az1_id: "{{ my_public_subnet_az1.subnet.id }}"
 
-- name:               Create Private Subnet
+- debug: var=public_subnet_az1_id
+
+- name:               Create Private Subnet [AZ1]
   ec2_vpc_subnet:
     state:            "present"
     vpc_id:           "{{ vpc_id }}"
-    cidr:             "{{ private_subnet_1_cidr }}"
+    cidr:             "{{ private_subnet_az1_cidr }}"
     az:               "{{ aws_region }}a"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:
       Name:           "{{ vpc_name }} Private Subnet"
-  register: my_private_subnet
+  register: my_private_subnet_az1
 
-- name:               Set Private Subnet ID in variable
+- name:               Set Private Subnet ID in variable [AZ1]
   set_fact:
-    private_subnet_id: "{{ my_private_subnet.subnet.id }}"
+    private_subnet_az1_id: "{{ my_private_subnet_az1.subnet.id }}"
+
+- debug: var=private_subnet_az1_id
+
+- name:               Create Public Subnet [AZ2]
+  ec2_vpc_subnet:
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "{{ public_subnet_az2_cidr }}"
+    az:               "{{ aws_region }}b"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    resource_tags:
+      Name:           "{{ vpc_name }} Public Subnet"
+    state:            "present"
+  register: my_public_subnet_az2
+
+- name:               Set Public Subnet ID in variable [AZ2]
+  set_fact:
+    public_subnet_az2_id: "{{ my_public_subnet_az2.subnet.id }}"
+
+- debug: var=public_subnet_az2_id
+
+- name:               Create Private Subnet [AZ2]
+  ec2_vpc_subnet:
+    state:            "present"
+    vpc_id:           "{{ vpc_id }}"
+    cidr:             "{{ private_subnet_az2_cidr }}"
+    az:               "{{ aws_region }}b"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    resource_tags:
+      Name:           "{{ vpc_name }} Private Subnet"
+  register: my_private_subnet_az2
+
+- name:               Set Private Subnet ID in variable [AZ2]
+  set_fact:
+    private_subnet_az2_id: "{{ my_private_subnet_az2.subnet.id }}"
+
+- debug: var=private_subnet_az2_id
 
 # Internet Gateway
 - name:               Create Internet Gateway for VPC
@@ -69,28 +111,89 @@
     igw_id:           "{{ my_vpc_igw.gateway_id }}"
 
 # NAT
-- name:               Create Elastic IP
+- name:               Check if NAT already exists [AZ1]
   shell: >
-      aws --profile {{ aws_profile }} ec2 allocate-address --domain vpc --query AllocationId | tr -d '"'
-  register: eip
+      aws --profile {{ aws_profile }} ec2 describe-nat-gateways \
+          --region {{ aws_region }} \
+          --filter "Name=subnet-id,Values={{ public_subnet_az1_id }}" "Name=state,Values=available,pending" \
+          --query NatGateways[0].NatGatewayId | tr -d '"'
+  register: my_nat_gateway_az1
+  changed_when: false
 
-- debug: var=eip
-
-- name:               Set Elastic IP in variable
+- name:               Set Nat Gateway ID in variable [AZ1]
   set_fact:
-    my_elastic_ip:    "{{ eip.stdout }}"
+    nat_gateway_az1_id:   "{{ my_nat_gateway_az1.stdout }}"
 
-- name: Create NAT Gateway
+- name:               Create Elastic IP [AZ1]
+  ec2_eip:
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    state:            "present"
+  register: eip_az1
+  when: nat_gateway_az1_id == "null"
+
+- name:               Set Elastic IP in variable [AZ1]
+  set_fact:
+    my_elastic_az1_ip:    "{{ eip_az1.public_ip }}"
+  when: nat_gateway_az1_id == "null"
+
+- name: Create NAT Gateway [AZ1]
   shell: >
     aws --profile {{ aws_profile }} ec2 create-nat-gateway \
-    --subnet-id {{ public_subnet_id }} \
-    --allocation-id {{ my_elastic_ip }} \
+    --subnet-id {{ public_subnet_az1_id }} \
+    --allocation-id {{ my_elastic_az1_ip }} \
     --query NatGateway.NatGatewayId | tr -d '"'
-  register: my_nat_gateway
+  register: my_nat_gateway_az1
+  when: nat_gateway_az1_id == "null"
 
-- name:               Set Nat Gateway ID in variable
+- name:               Set Nat Gateway ID in variable [AZ1]
   set_fact:
-    nat_gateway_id:   "{{ my_nat_gateway.stdout }}"
+    nat_gateway_az1_id:   "{{ my_nat_gateway_az1.stdout }}"
+  when: nat_gateway_az1_id == "null"
+
+- debug: var=nat_gateway_az1_id
+
+- name:               Check if NAT already exists [AZ2]
+  shell: >
+      aws --profile {{ aws_profile }} ec2 describe-nat-gateways \
+          --region {{ aws_region }} \
+          --filter "Name=subnet-id,Values={{ public_subnet_az2_id }}" "Name=state,Values=available,pending" \
+          --query NatGateways[0].NatGatewayId | tr -d '"'
+  register: my_nat_gateway_az2
+  changed_when: false
+
+- name:               Set Nat Gateway ID in variable [AZ2]
+  set_fact:
+    nat_gateway_az2_id:   "{{ my_nat_gateway_az2.stdout }}"
+
+- name:               Create Elastic IP [AZ2]
+  ec2_eip:
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    state:            "present"
+  register: eip_az2
+  when: nat_gateway_az2_id == "null"
+
+- name:               Set Elastic IP in variable [AZ2]
+  set_fact:
+    my_elastic_az2_ip:    "{{ eip_az2.public_ip }}"
+  when: nat_gateway_az2_id == "null"
+
+- name: Create NAT Gateway [AZ2]
+  shell: >
+    aws --profile {{ aws_profile }} ec2 create-nat-gateway \
+        --subnet-id {{ public_subnet_az2_id }} \
+        --allocation-id {{ my_elastic_az2_ip }} \
+        --query NatGateway.NatGatewayId | tr -d '"'
+  register: my_nat_gateway_az2
+  when: nat_gateway_az2_id == "null"
+
+- name:               Set Nat Gateway ID in variable [AZ2]
+  set_fact:
+    nat_gateway_az2_id:   "{{ my_nat_gateway_az2.stdout }}"
+  when: nat_gateway_az2_id == "null"
+
+- debug: var=nat_gateway_az2_id
 
 # We pause a few seconds for the NAT Gateway to be ready.
 - pause: seconds=5
@@ -104,23 +207,37 @@
     tags:
       Name:           "{{ vpc_name }} Public"
     subnets:
-      - "{{ public_subnet_id }}"
+      - "{{ public_subnet_az1_id }}"
+      - "{{ public_subnet_az2_id }}"
     routes:
       - dest:         "0.0.0.0/0"
         gateway_id:   "{{ igw_id }}"
 
-- name:               Set up private subnet route table
+- name:               Set up private subnet route table [AZ1]
   ec2_vpc_route_table:
     vpc_id:           "{{ vpc_id }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     tags:
-      Name:           "{{ vpc_name }} Private"
+      Name:           "{{ vpc_name }} Private AZ1"
     subnets:
-      - "{{ private_subnet_id }}"
+      - "{{ private_subnet_az1_id }}"
     routes:
       - dest:         "0.0.0.0/0"
-        gateway_id:   "{{ nat_gateway_id }}"
+        gateway_id:   "{{ nat_gateway_az1_id }}"
+
+- name:               Set up private subnet route table [AZ2]
+  ec2_vpc_route_table:
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    tags:
+      Name:           "{{ vpc_name }} Private AZ2"
+    subnets:
+      - "{{ private_subnet_az2_id }}"
+    routes:
+      - dest:         "0.0.0.0/0"
+        gateway_id:   "{{ nat_gateway_az2_id }}"
 
 # Firewalls
 - name:               Set up Network ACLs
@@ -130,7 +247,8 @@
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     subnets:
-     - "{{ public_subnet_id }}"
+      - "{{ public_subnet_az1_id }}"
+      - "{{ public_subnet_az2_id }}"
     tags:
       Name:           "{{ vpc_name }} Public"
     ingress: [
@@ -149,16 +267,3 @@
       [333, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
     ]
     state:            "present"
-
-# VPN
-#- name: Create a new vgw attached to a specific VPC
-#  ec2_vpc_vgw:
-#    name:           "{{ vpc_name }}"
-#    vpc_id:         "{{ vpc_id }}"
-#    region:         "{{ aws_region }}"
-#    profile:        "{{ aws_profile }}"
-#    type:           "ipsec.1"
-#    tags:
-#      Name:           "{{ vpc_name }}"
-#    state:          "present"
-#  register: my_vpc_vgw

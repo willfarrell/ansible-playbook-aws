@@ -1,0 +1,7 @@
+---
+
+- include: update.yml
+  when: ansible_os_family == 'RedHat'
+
+- include: firewall.yml
+  when: ansible_os_family == 'RedHat'

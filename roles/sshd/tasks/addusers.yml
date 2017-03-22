@@ -1,0 +1,40 @@
+---
+
+- name: Add users
+  user:
+    name:     "{{ item }}"
+    state:    present
+    password: "{{ ssh_default_password }}"
+    update_password: always
+    #expires={{ ansible_date_time.epoch + ssh_user_expire }}
+  with_items:
+    - "{{ ssh_users }}"
+
+# TODO apply password
+# lookup password creates a localfile
+# "{{ lookup('password', '/home/{{ item }}/.password chars=ascii_letters,digits,hexdigits,punctuation length=32') }}"
+
+- name: Add ssh user keys
+  authorized_key:
+    user:   "{{ item }}"
+    state:  present
+    path:   "/etc/ssh/authorized_keys/{{ item }}"
+    key:    "{{ lookup('file', 'authorized_keys/{{ item }}') }}"
+  with_items:
+    - "{{ ssh_users }}"
+
+- name: Set authorized_keys ownership
+  file:
+    path: "/etc/ssh/authorized_keys/{{ item }}"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0400
+  with_items:
+    - "{{ ssh_users }}"
+
+- name: Set root group permissions
+  user:
+    name:   "{{ item }}"
+    group:  wheel
+  with_items:
+    - "{{ ssh_sudo_users }}"

@@ -1,0 +1,15 @@
+---
+
+# Create logical volumes
+
+# TODO TEST - stuck on vgcreate
+# 1.1 https://wiki.debian.org/LVM -> Create an LV
+# http://www.thegeekstuff.com/2010/08/how-to-create-lvm
+# http://www.n2ws.com/how-to-guides/how-to-create-an-lvm-volume-on-aws.html
+# Note /dev/xvda may be diff on other machines
+#apt-get install -y lvm2
+#service lvm2 start
+#vgcreate docker /dev/xvda2
+#lvcreate -L 10g -n logical_volume docker
+#mkfs -t ext4 /dev/docker/logical_volume
+#mount /dev/docker/logical_volume /var/lib/docker
