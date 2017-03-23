@@ -1,9 +1,0 @@
-{
-	"disable-legacy-registry": true,
-	"dns": [ "8.8.8.8", "8.8.4.4" ],
-	"icc": false,
-	"live-restore": true,
-	"log-level": "info",
-	"storage-driver": "overlay",
-	"userland-proxy": false
-}

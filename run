@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+ORG_ID=f4rr3ll
+
 # pip install --upgrade ansible
 # pip install --upgrade boto3
 # pip install --upgrade --user awscli
@@ -8,10 +10,12 @@ set -e
 # install deps
 #ansible-galaxy install --roles-path=./roles -r requirements.yml
 
+# Decrypt
+#ansible-vault decrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password
+
+# Encrypt
+#ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password
+
 # Cloud
-#ansible-playbook 1_aws.yml
+#ansible-playbook playbook.yml --vault-password-file ~/.vault_password_${ORG_ID}
 
-# Servers
-ansible bastion -m ping
-
-ansible-playbook 2_servers.yml

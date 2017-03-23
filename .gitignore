@@ -2,5 +2,7 @@
 *.iml
 *.retry
 
+.vault_password
+
 roles/galaxy.*
 authorized_keys

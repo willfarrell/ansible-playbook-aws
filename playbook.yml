@@ -4,9 +4,20 @@
 
 - hosts: localhost
   vars:
-    # host_vars/localhost/aws.yml
+
+    ## localhost ##
+    org_name:       'f4rr3ll'
+
+    # localhost profile name
+    aws_profile:    'aws.{{ org_name | lower }}'
+    # ssh key name
+    aws_key_name:   'ansible_{{ org_name | lower }}'
+
+    #aws_access_key:      # group_vars/all/secrets.yml
+    #aws_secret_key:      # group_vars/all/secrets.yml
 
     # aws.networking
+    aws_region:     'us-east-2'
     vpc_name:       'Staging'
     vpc_cidr_2:     '185'
     vpc_cidr_block: '10.{{vpc_cidr_2}}.0.0/16'
@@ -25,7 +36,7 @@
 
     # aws.rds
     db_instance_type:         't2.small'
-    db_password:              'password'
+    #db_password:             # group_vars/all/secrets.yml
   roles:
     - aws.profile
     - aws.networking
