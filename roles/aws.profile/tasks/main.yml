@@ -1,7 +1,5 @@
 ---
 
-- debug: var=fail2ban_config_bantime
-
 - stat: path=~/.aws/credentials get_md5=yes
   register: before
 

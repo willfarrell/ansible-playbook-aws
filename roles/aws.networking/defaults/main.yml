@@ -1,0 +1,16 @@
+---
+
+aws_region:     'us-east-1'
+
+vpc_name:       'Development'
+vpc_cidr_block: '10.255.0.0/16'
+
+vpc_az1_letter: 'a'
+public_subnet_az1_cidr:  '10.255.10.0/24'
+private_subnet_az1_cidr: '10.255.11.0/24'
+
+vpc_az2_letter: 'b'
+public_subnet_az2_cidr:  '10.255.20.0/24'
+private_subnet_az2_cidr: '10.255.21.0/24'
+
+

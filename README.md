@@ -62,10 +62,6 @@ aws_secret_key: ''
 
 # RDS
 db_password: ''
-
-# SSH
-# Min Length: 14, 1 Uppercase, 1 Lowercase, 1 Number, 1 Special Char
-ssh_default_password: 'P4ssw0rd!01234'
 ```
 
 3. Encrypt secrets. `ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password`

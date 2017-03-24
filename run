@@ -11,11 +11,11 @@ ORG_ID=f4rr3ll
 #ansible-galaxy install --roles-path=./roles -r requirements.yml
 
 # Decrypt
-#ansible-vault decrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password
+#ansible-vault decrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password_${ORG_ID}
 
 # Encrypt
-#ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password
+#ansible-vault encrypt group_vars/all/secrets.yml --vault-password-file ~/.vault_password_${ORG_ID}
 
 # Cloud
-#ansible-playbook playbook.yml --vault-password-file ~/.vault_password_${ORG_ID}
+ansible-playbook playbook.yml --vault-password-file ~/.vault_password_${ORG_ID}
 

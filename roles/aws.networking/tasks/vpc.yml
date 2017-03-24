@@ -28,7 +28,7 @@
   ec2_vpc_subnet:
     vpc_id:           "{{ vpc_id }}"
     cidr:             "{{ public_subnet_az1_cidr }}"
-    az:               "{{ aws_region }}a"
+    az:               "{{ aws_region }}{{ vpc_az1_letter }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:
@@ -47,7 +47,7 @@
     state:            "present"
     vpc_id:           "{{ vpc_id }}"
     cidr:             "{{ private_subnet_az1_cidr }}"
-    az:               "{{ aws_region }}a"
+    az:               "{{ aws_region }}{{ vpc_az1_letter }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:
@@ -64,7 +64,7 @@
   ec2_vpc_subnet:
     vpc_id:           "{{ vpc_id }}"
     cidr:             "{{ public_subnet_az2_cidr }}"
-    az:               "{{ aws_region }}b"
+    az:               "{{ aws_region }}{{ vpc_az2_letter }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:
@@ -83,7 +83,7 @@
     state:            "present"
     vpc_id:           "{{ vpc_id }}"
     cidr:             "{{ private_subnet_az2_cidr }}"
-    az:               "{{ aws_region }}b"
+    az:               "{{ aws_region }}{{ vpc_az2_letter }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     resource_tags:

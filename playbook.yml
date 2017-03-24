@@ -42,5 +42,5 @@
     - aws.networking
     - aws.ec2.privkey
     - aws.ec2.bastion
-    - aws.ec2.webapp
+    - aws.ec2.instance
     - aws.rds
