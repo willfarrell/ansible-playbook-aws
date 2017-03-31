@@ -1,0 +1,59 @@
+---
+
+- name:               Create Redis Security Group
+  ec2_group:
+    name:             "Redis"
+    #tags:                              # Not Supported
+    #  Name: "name"
+    description:      "Port 5432 from VPC Private Subnets"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 6379
+        to_port: 6379
+        cidr_ip: "{{ private_subnet_az1_cidr }}"
+      - proto: tcp
+        from_port: 6379
+        to_port: 6379
+        cidr_ip: "{{ private_subnet_az2_cidr }}"
+      - proto: tcp
+        from_port: 6379
+        to_port: 6379
+        group_id: "{{ bastion_group_id }}"
+    state:            "present"
+  register: my_redis_group
+
+- name:               Set Redis Security Group ID in variable
+  set_fact:
+    redis_group_id: "{{ my_redis_group.group_id }}"
+
+# DB Subnet Group
+- name:               Create Elasticache subnet Group
+  elasticache_subnet_group:
+    name:             "{{ vpc_name }}"
+    description:      "All private subnets in VPC"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    state:            "present"
+    subnets:
+     - "{{ private_subnet_az1_id }}"
+     - "{{ private_subnet_az2_id }}"
+
+# DB Setup
+- name:               Create Redis on Elasticache
+  elasticache:
+    name:             "redis-{{ vpc_name | lower }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    engine:           "redis"
+    node_type:        "cache.{{ redis_instance_type }}"
+    cache_subnet_group: "{{ vpc_name }}"
+    security_group_ids: "{{ redis_group_id }}"
+    state:            present
+
+
+
+
+

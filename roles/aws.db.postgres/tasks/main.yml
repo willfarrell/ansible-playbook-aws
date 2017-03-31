@@ -1,37 +1,37 @@
 ---
 
 # Database
-- name:               Create MySQL Security Group
+- name:               Create Postgres Security Group
   ec2_group:
-    name:             "MySQL"
+    name:             "Postgres"
     #tags:                              # Not Supported
     #  Name: "name"
-    description:      "Port 3306 from VPC Private Subnets"
+    description:      "Port 5432 from VPC Private Subnets"
     vpc_id:           "{{ vpc_id }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
     rules:
       - proto: tcp
-        from_port: 3306
-        to_port: 3306
+        from_port: 5432
+        to_port: 5432
         cidr_ip: "{{ private_subnet_az1_cidr }}"
       - proto: tcp
-        from_port: 3306
-        to_port: 3306
+        from_port: 5432
+        to_port: 5432
         cidr_ip: "{{ private_subnet_az2_cidr }}"
       - proto: tcp
-        from_port: 3306
-        to_port: 3306
+        from_port: 5432
+        to_port: 5432
         group_id: "{{ bastion_group_id }}"
     state:            "present"
-  register: my_mysql_group
+  register: my_postgres_group
 
-- name:               Set MySQL Security Group ID in variable
+- name:               Set Postgres Security Group ID in variable
   set_fact:
-    mysql_group_id: "{{ my_mysql_group.group_id }}"
+    postgres_group_id: "{{ my_postgres_group.group_id }}"
 
 # DB Subnet Group
-- name:               Create DB subnet Group
+- name:               Create RDS subnet Group
   rds_subnet_group:
     name:             "{{ vpc_name }}"
     description:      "All private subnets in VPC"
@@ -43,53 +43,53 @@
      - "{{ private_subnet_az2_id }}"
 
 # DB Setup
-- name:               Check MySQL on RDS Exists
+- name:               Check Postgres on RDS Exists
   rds:
     command: facts
-    instance_name:    "mysql-{{ vpc_name | lower }}"
+    instance_name:    "postgres-{{ vpc_name | lower }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
-  register: mysql_facts
+  register: postgres_facts
   ignore_errors: yes
 
-- debug: var=mysql_facts
+- debug: var=postgres_facts
 
-- name:               Setup MySQL on RDS
+- name:               Setup Postgres on RDS
   rds:
     command:          "create"
-    instance_name:    "mysql-{{ vpc_name | lower }}"
-    instance_type:    "db.{{ db_instance_type }}"
+    instance_name:    "postgres-{{ vpc_name | lower }}"
+    instance_type:    "db.{{ postgres_instance_type }}"
     profile:          "{{ aws_profile }}"
     region:           "{{ aws_region }}"
     subnet:           "{{ vpc_name }}"
-    db_engine:        "MySQL"
+    db_engine:        "postgres"
     upgrade:          "yes"
-    port:             3306
+    port:             5432
     size:             50
     backup_retention: 30
     db_name:          "{{ org_name | lower }}"
     username:         "{{ org_name | lower }}_admin"
-    password:         "{{ db_password }}"
-    vpc_security_groups:  "{{ mysql_group_id }}"  # csv
-  when: mysql_facts.failed is defined
+    password:         "{{ postgres_password }}"
+    vpc_security_groups:  "{{ postgres_group_id }}"  # csv
+  when: postgres_facts.failed is defined
 
-- name:               Modify MySQL on RDS
+- name:               Modify Postgres on RDS
   rds:
     command:          "modify"
-    instance_name:    "mysql-{{ vpc_name | lower }}"
+    instance_name:    "postgres-{{ vpc_name | lower }}"
     instance_type:    "db.{{ db_instance_type }}"
     profile:          "{{ aws_profile }}"
     region:           "{{ aws_region }}"
     #subnet:           "{{ vpc_name }}"
-    db_engine:        "MySQL"
+    db_engine:        "postgres"
     #upgrade:          "yes" # Not Supported
     #port:             3306 # Not Supported
     size:             50
     backup_retention: 30
     #db_name:          "{{ org_name | lower }}" # Not Supported
     #username:         "{{ org_name | lower }}_admin" # not Supported
-    password:         "password"
+    password:         "{{ postgres_password }}"
     vpc_security_groups:  "{{ mysql_group_id }}"  # csv for some reason
   when:
-    - mysql_facts.failed is not defined
-    - mysql_facts.instance.status == 'available'
+    - postgres_facts.failed is not defined
+    - postgres_facts.instance.status == 'available'

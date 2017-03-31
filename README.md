@@ -38,6 +38,7 @@ Also attach `AdministratorAccess`.
 ### IAM User
 
 1. Click [Users](https://console.aws.amazon.com/iam/home#/users)
+1. Click `Add user`.
 1. Field `User name`: Enter `ansible`.
 1. Check `Programmatic access`.
 1. Click `Next: Permissions`.

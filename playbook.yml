@@ -34,13 +34,17 @@
     # aws.ec2.webapp
     webapp_instance_type:     't2.small'
 
-    # aws.rds
-    db_instance_type:         't2.small'
-    #db_password:             # group_vars/all/secrets.yml
+    # aws.db.*
+    mysql_instance_type:         't2.small'
+    #mysql_password:             # group_vars/all/secrets.yml
+    postgres_instance_type:         't2.small'
+    #postgres_password:             # group_vars/all/secrets.yml
+
   roles:
     - aws.profile
     - aws.networking
     - aws.ec2.privkey
     - aws.ec2.bastion
     - aws.ec2.instance
-    - aws.rds
+    - aws.db.postgres
+    - aws.db.redis
