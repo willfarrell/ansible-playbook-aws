@@ -5,7 +5,7 @@
     name:             "Redis"
     #tags:                              # Not Supported
     #  Name: "name"
-    description:      "Port 5432 from VPC Private Subnets"
+    description:      "Port 6379 from VPC Private Subnets"
     vpc_id:           "{{ vpc_id }}"
     region:           "{{ aws_region }}"
     profile:          "{{ aws_profile }}"
@@ -49,6 +49,7 @@
     profile:          "{{ aws_profile }}"
     engine:           "redis"
     node_type:        "cache.{{ redis_instance_type }}"
+    num_nodes:        "1"
     cache_subnet_group: "{{ vpc_name }}"
     security_group_ids: "{{ redis_group_id }}"
     state:            present

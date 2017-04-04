@@ -1,11 +1,18 @@
 ---
 
+- name: "Ensure ~/.aws/credentials exists"
+  file:
+    path: "~/.aws/credentials"
+    state: touch
+  register: touch_log
+  changed_when: touch_log.diff.before.state != "file"
+
 - stat: path=~/.aws/credentials get_md5=yes
   register: before
 
 - name: "Create AWS profile"
   shell: echo "{{aws_access_key}}\n{{aws_secret_key}}\n{{aws_region}}\njson\n" | aws --profile {{ aws_profile }} configure
-  changed_when: False
+  changed_when: false
 
 - stat: path=~/.aws/credentials get_md5=yes
   register: after

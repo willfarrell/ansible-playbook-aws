@@ -77,7 +77,7 @@
   rds:
     command:          "modify"
     instance_name:    "postgres-{{ vpc_name | lower }}"
-    instance_type:    "db.{{ db_instance_type }}"
+    instance_type:    "db.{{ postgres_instance_type }}"
     profile:          "{{ aws_profile }}"
     region:           "{{ aws_region }}"
     #subnet:           "{{ vpc_name }}"
@@ -89,7 +89,7 @@
     #db_name:          "{{ org_name | lower }}" # Not Supported
     #username:         "{{ org_name | lower }}_admin" # not Supported
     password:         "{{ postgres_password }}"
-    vpc_security_groups:  "{{ mysql_group_id }}"  # csv for some reason
+    vpc_security_groups:  "{{ postgres_group_id }}"  # csv for some reason
   when:
     - postgres_facts.failed is not defined
     - postgres_facts.instance.status == 'available'

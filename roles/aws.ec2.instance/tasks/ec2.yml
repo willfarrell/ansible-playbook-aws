@@ -4,6 +4,7 @@
 - name:               Get AMI for CentOS in region
   ec2_ami_find:
     region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
     owner:            "aws-marketplace"
     product_code:     "aw0evgkw8e5c1q413zgy5pjce"
     no_result_action: fail

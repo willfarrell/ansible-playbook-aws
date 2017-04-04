@@ -1,10 +1,27 @@
 # ansible-playbook-aws
 
 ## Requirements
-- ansible >= 2.3 (`pip install git+git://github.com/ansible/ansible.git@stable-2.3`)
+- ansible >= 2.3
 - AWS Account w/ IAM access
 
 ## Setup
+```bash
+# 2017-04
+brew install python
+sudo -H pip install --upgrade ansible
+sudo -H pip install git+https://github.com/ansible/ansible@stable-2.3	# not released yet
+sudo -H pip install --ignore-installed six	# fix bug with boto
+sudo -H pip install --ignore-installed python-dateutil	# fix bug with botocore
+sudo -H pip install --upgrade botocore boto boto3 passlib
+sudo -H pip install --upgrade --user awscli
+
+python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
+
+# bashrc
+export PYTHONPATH=/usr/local/Cellar/python/2.7.13/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages
+export PATH=~/Library/Python/2.7/bin:$PATH
+
+```
 
 ### Set org_id
 Keep it lowercase.
@@ -77,40 +94,13 @@ db_password: ''
 
 ### TODO
 - [ ] Enable IPv6
+- [ ] BUG NAT deploys failed
 
-## 2. Bastion Host
-- [x] Deploy EC2 instance
-- [x] Setup bastion host
-- [x] Setup Security Groups (SSH)
-- [x] role to add public keys to servers
-- [-] Docs for google-authenticator
-- [-] Docs for multi-plexing through bastion and setting up OTP
-
-## 3. Servers
-- [x] Security groups
-- [x] deploy Web Server + LB
-- [x] deploy DB
-- [x] harden Web Server
-- [x] docker Web Server
-- [ ] create users & tables DB
 
 ## Security
 ### AWS
 - [ ] update access policy (ansible user) https://awspolicygen.s3.amazonaws.com/policygen.html
 
-### docker
-- [ ] 2.6 & 3.{7-14} - TLS
-- [ ] 2.8  - Enable user namespace support
-- [ ] 2.11 - Use authorization plugin - https://github.com/twistlock/authz
-- [ ] 2.12 - Configure centralized and remote logging
-
-### Testing
-```bash
-#git clone -b configuration_file_args https://github.com/konstruktoid/docker-bench-security.git
-git clone https://github.com/docker/docker-bench-security.git
-cd docker-bench-security
-sh docker-bench-security.sh
-```
 
 ## TODO
 - [ ] docker swarm
