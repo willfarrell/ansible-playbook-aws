@@ -29,33 +29,34 @@
 
 - name:               Create Load Balancer
   ec2_elb_lb:
-    name:             "webapp"
-    state:            "present"
-    profile:          "{{ aws_profile }}"
-    region:           "{{ aws_region }}"
-    security_group_ids: "{{ lb_group_id }}"
+    name:                     "webapp"
+    state:                    "present"
+    profile:                  "{{ aws_profile }}"
+    region:                   "{{ aws_region }}"
+    security_group_ids:       "{{ lb_group_id }}"
+    cross_az_load_balancing:  "yes"
     instance_ids:
       - "{{ item.id }}"
     subnets:
-      - "{{ private_subnet_az1_id }}"
-      - "{{ private_subnet_az2_id }}"
+      - "{{ public_subnet_az1_id }}"
+      - "{{ public_subnet_az2_id }}"
     listeners:
       - protocol:             tcp
         load_balancer_port:   80
         instance_port:        80
-        proxy_protocol:       true
+        proxy_protocol:       false
       - protocol:             tcp
         load_balancer_port:   443
         instance_port:        443
-        proxy_protocol:       true
+        proxy_protocol:       false
     health_check:
-      ping_protocol:        https
-      ping_port:            443
-      ping_path:            "/ping"
-      response_timeout:     5
-      interval:             30
-      unhealthy_threshold:  2
-      healthy_threshold:    10
+      ping_protocol:          https
+      ping_port:              443
+      ping_path:              "/ping"
+      response_timeout:       5
+      interval:               30
+      unhealthy_threshold:    2
+      healthy_threshold:      10
   with_flattened:
     - "{{ webapp_az1_ec2s.tagged_instances }}"
     - "{{ webapp_az2_ec2s.tagged_instances }}"

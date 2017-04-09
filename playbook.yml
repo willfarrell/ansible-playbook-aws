@@ -47,4 +47,4 @@
     - aws.ec2.bastion
     - aws.ec2.instance
     - aws.db.postgres
-    - aws.db.redis
+    - aws.cache.redis

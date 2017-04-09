@@ -254,16 +254,18 @@
     ingress: [
       [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80],
       [101, 'tcp', 'allow', '0.0.0.0/0', null, null, 443, 443],
-      [153, 'udp', 'allow', '0.0.0.0/0', null, null, 53, 53],
+      [103, 'icmp', 'allow', '0.0.0.0/0', -1, -1],
       [122, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22],
-      [333, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535],
-      [444, 'udp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
+      [153, 'udp', 'allow', '0.0.0.0/0', null, null, 53, 53],
+      [887, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535],
+      [888, 'udp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
     ]
     egress: [
       [100, 'tcp', 'allow', '0.0.0.0/0', null, null, 80, 80],
       [101, 'tcp', 'allow', '0.0.0.0/0', null, null, 443, 443],
+      [103, 'icmp', 'allow', '0.0.0.0/0', -1, -1],
+      [122, 'tcp', 'allow', '0.0.0.0/0', null, null, 22, 22],
       [153, 'udp', 'allow', '0.0.0.0/0', null, null, 53, 53],
-      [103, 'icmp', 'allow', '0.0.0.0/0', 0, 8],
-      [333, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
+      [887, 'tcp', 'allow', '0.0.0.0/0', null, null, 1024, 65535]
     ]
     state:            "present"

@@ -77,7 +77,7 @@
   rds:
     command:          "modify"
     instance_name:    "mysql-{{ vpc_name | lower }}"
-    instance_type:    "db.{{ db_instance_type }}"
+    instance_type:    "db.{{ mysql_instance_type }}"
     profile:          "{{ aws_profile }}"
     region:           "{{ aws_region }}"
     #subnet:           "{{ vpc_name }}"

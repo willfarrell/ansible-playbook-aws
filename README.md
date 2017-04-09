@@ -95,12 +95,14 @@ db_password: ''
 ### TODO
 - [ ] Enable IPv6
 - [ ] BUG NAT deploys failed
-
+- [ ] Double check route table has working nat and matches
+- [ ] BUG DNS 8.8.8.8 not reachable from private subnet
+- [ ] Add `delete on termination` to ec2 volumes
+- [ ] Encrypted RDS not supported in ansible + boto - https://github.com/boto/boto/pull/3027
 
 ## Security
 ### AWS
 - [ ] update access policy (ansible user) https://awspolicygen.s3.amazonaws.com/policygen.html
-
 
 ## TODO
 - [ ] docker swarm

@@ -38,6 +38,10 @@
         from_port:    22
         to_port:      22
         group_id:      "{{ bastion_group_id }}"
+      - proto:        icmp
+        from_port:    -1
+        to_port:      -1
+        group_id:      "{{ bastion_group_id }}"
     state:            "present"
   register: my_webapp_group
 
@@ -52,11 +56,18 @@
     instance_type:    "{{ webapp_instance_type }}"
     image:            "{{ aws_instance_ami }}"
     region:           "{{ aws_region }}"
+    vpc_subnet_id:    "{{ private_subnet_az1_id }}"
+    #volumes:
+    #  - device_name: /dev/sda1 # Built into CentOS
+    #  - device_name: /dev/sda1
+    #    volume_type: gp2
+    #    volume_size: 8
+    #    encrypted: true
+    #    delete_on_termination: true
     wait:             yes
     group_id:         ["{{ webapp_group_id }}"]
     exact_count:      1
     count_tag:        "webapp_az1"
-    vpc_subnet_id:    "{{ private_subnet_az1_id }}"
     instance_tags:
       Name:           "Web App"
       webapp_az1:     "true"
@@ -75,11 +86,18 @@
     instance_type:    "{{ webapp_instance_type }}"
     image:            "{{ aws_instance_ami }}"
     region:           "{{ aws_region }}"
+    vpc_subnet_id:    "{{ private_subnet_az2_id }}"
+    #volumes:
+    #  - device_name: /dev/sda1 # Built into CentOS
+    #  - device_name: /dev/sda1
+    #    volume_type: gp2
+    #    volume_size: 8
+    #    encrypted: true
+    #    delete_on_termination: true
     wait:             yes
     group_id:         ["{{ webapp_group_id }}"]
     exact_count:      1
     count_tag:        "webapp_az2"
-    vpc_subnet_id:    "{{ private_subnet_az2_id }}"
     instance_tags:
       Name:           "Web App"
       webapp_az2:     "true"

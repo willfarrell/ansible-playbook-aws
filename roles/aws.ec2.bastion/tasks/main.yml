@@ -46,11 +46,17 @@
     instance_type:    "{{ bastion_instance_type }}"
     image:            "{{ bastion_instance_ami }}"
     region:           "{{ aws_region }}"
+    vpc_subnet_id:    "{{ public_subnet_az1_id }}"
+    volumes:
+      - device_name: /dev/sda1
+        volume_type: gp2
+        volume_size: 8
+        encrypted: true
+        delete_on_termination: true
     wait:             yes
     group_id:         ["{{ bastion_group_id }}"]
     exact_count:      1
     count_tag:        "bastion"
-    vpc_subnet_id:    "{{ public_subnet_az1_id }}"
     instance_tags:
       Name:           "Bastion Host"
       bastion:        "true"
