@@ -56,10 +56,11 @@
     wait:             yes
     group_id:         ["{{ bastion_group_id }}"]
     exact_count:      1
-    count_tag:        "bastion"
+    count_tag:
+      bastion:        "{{ vpc_name | lower }}"
     instance_tags:
-      Name:           "Bastion Host"
-      bastion:        "true"
+      Name:           "{{vpc_name}} Bastion Host"
+      bastion:        "{{ vpc_name | lower }}"
   register: bastion_ec2s
 
 - debug: var=bastion_ec2s

@@ -4,7 +4,7 @@
 - name:               Get AMI for CentOS in region
   ec2_ami_find:
     region:           "{{ aws_region }}"
-    profile:          "{{ aws_profile }}"
+    profile:           "{{ aws_profile }}"
     owner:            "aws-marketplace"
     product_code:     "aw0evgkw8e5c1q413zgy5pjce"
     no_result_action: fail
@@ -53,12 +53,11 @@
   ec2:
     profile:          "{{ aws_profile }}"
     key_name:         "{{ aws_key_name }}"
-    instance_type:    "{{ webapp_instance_type }}"
+    instance_type:    "{{ docker_instance_type }}"
     image:            "{{ aws_instance_ami }}"
     region:           "{{ aws_region }}"
     vpc_subnet_id:    "{{ private_subnet_az1_id }}"
     #volumes:
-    #  - device_name: /dev/sda1 # Built into CentOS
     #  - device_name: /dev/sda1
     #    volume_type: gp2
     #    volume_size: 8
@@ -69,7 +68,7 @@
     exact_count:      1
     count_tag:        "webapp_az1"
     instance_tags:
-      Name:           "Web App"
+      Name:           "{{vpc_name}} Web App"
       webapp_az1:     "true"
   register: webapp_az1_ec2s
 
@@ -83,7 +82,7 @@
   ec2:
     profile:          "{{ aws_profile }}"
     key_name:         "{{ aws_key_name }}"
-    instance_type:    "{{ webapp_instance_type }}"
+    instance_type:    "{{ docker_instance_type }}"
     image:            "{{ aws_instance_ami }}"
     region:           "{{ aws_region }}"
     vpc_subnet_id:    "{{ private_subnet_az2_id }}"
@@ -99,8 +98,69 @@
     exact_count:      1
     count_tag:        "webapp_az2"
     instance_tags:
-      Name:           "Web App"
+      Name:           "{{vpc_name}} Web App"
       webapp_az2:     "true"
   register: webapp_az2_ec2s
 
 - debug: var=webapp_az2_ec2s
+
+# Load Balancer
+
+- name:               Create Load Balancer Security Group
+  ec2_group:
+    name:             "Load Balancer"
+    #tags:                              # Not Supported
+    #  Name: "name"
+    description:      "Port 80, 443"
+    vpc_id:           "{{ vpc_id }}"
+    region:           "{{ aws_region }}"
+    profile:          "{{ aws_profile }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+    state:            "present"
+  register: my_lb_group
+
+- name:               Set Load Balancer Security Group ID in variable
+  set_fact:
+    lb_group_id: "{{ my_lb_group.group_id }}"
+
+- name:               Create Load Balancer for Web App
+  ec2_elb_lb:
+    name:                     "{{vpc_name | lower}}-webapp"
+    state:                    "present"
+    profile:                  "{{ aws_profile }}"
+    region:                   "{{ aws_region }}"
+    security_group_ids:       "{{ lb_group_id }}"
+    cross_az_load_balancing:  "yes"
+    instance_ids:
+      - "{{ item.id }}"
+    subnets:
+      - "{{ public_subnet_az1_id }}"
+      - "{{ public_subnet_az2_id }}"
+    listeners:
+      - protocol:             tcp
+        load_balancer_port:   80
+        instance_port:        80
+        proxy_protocol:       false
+      - protocol:             tcp
+        load_balancer_port:   443
+        instance_port:        443
+        proxy_protocol:       false
+    health_check:
+      ping_protocol:          tcp
+      ping_port:              443
+      ping_path:              "/ping"
+      response_timeout:       5
+      interval:               30
+      unhealthy_threshold:    2
+      healthy_threshold:      10
+  with_flattened:
+    - "{{ webapp_az1_ec2s.tagged_instances }}"
+    - "{{ webapp_az2_ec2s.tagged_instances }}"

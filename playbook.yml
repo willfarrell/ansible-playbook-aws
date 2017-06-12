@@ -32,7 +32,7 @@
     bastion_instance_type:    't2.micro'
 
     # aws.ec2.webapp
-    webapp_instance_type:     't2.small'
+    docker_instance_type:     't2.small'
 
     # aws.db.*
     mysql_instance_type:         't2.small'

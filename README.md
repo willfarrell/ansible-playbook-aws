@@ -9,18 +9,18 @@
 # 2017-04
 brew install python
 sudo -H pip install --upgrade ansible
-sudo -H pip install git+https://github.com/ansible/ansible@stable-2.3	# not released yet
 sudo -H pip install --ignore-installed six	# fix bug with boto
 sudo -H pip install --ignore-installed python-dateutil	# fix bug with botocore
 sudo -H pip install --upgrade botocore boto boto3 passlib
 sudo -H pip install --upgrade --user awscli
 
-python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
-
 # bashrc
-export PYTHONPATH=/usr/local/Cellar/python/2.7.13/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages
+export PYTHONPATH=$(python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
 export PATH=~/Library/Python/2.7/bin:$PATH
 
+# Other deps
+# mysql_*
+sudo -H pip install --upgrade MySQL-python
 ```
 
 ### Set org_id
